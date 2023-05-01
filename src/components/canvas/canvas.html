@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Grammar Grub Canvas</title>
+        <meta name="description" content="Grammar Game">
+        <meta name="author" content="Joel McFadden">
+    </head>
+    <body>
+        <!-- Note: You could add CSS to scale this to different screen resolutions -->
+        <canvas id="canvas" width="750" height="400" style="border: 1px solid lightgrey;">
+            Your browser does not support the HTML5 canvas tag.
+            <!-- Fallback content goes here... -->
+        </canvas>
+
+        <script>
+            /**
+             * Playing around with animations and game loops
+             * https://spicyyoghurt.com/tutorials/html5-javascript-game-development/create-a-smooth-canvas-animation
+             */
+            "use strict";
+            let canvas;
+            let context;
+
+            window.onload = init;   // wait for the window to load first...
+
+            function init() {
+                // get a reference to the canvas
+                canvas = document.getElementById('canvas');
+                context = canvas.getContext('2d');
+
+                window.requestAnimationFrame(gameLoop);
+            }
+
+            const startX = 0;
+            const startY = 0;
+            const maxX = 600;
+            const maxY = 300;
+
+            let timePassed = 0;
+            let secondsPassed = 0;
+            let prevTimeStamp = 0;
+            let movingSpeed = 50;   // pixels per second
+            let fps;
+            let rectX = startX;
+            let rectY = startY;
+
+            function gameLoop(timeStamp) {
+                // calculate how many seconds have passed
+                secondsPassed = (timeStamp - prevTimeStamp) / 1000;
+
+                // limit time skip
+                secondsPassed = Math.min(secondsPassed, 0.1);
+                prevTimeStamp = timeStamp;
+
+                update(secondsPassed);
+                draw();
+
+                window.requestAnimationFrame(gameLoop);
+            }
+
+            function update(secondsPassed) {
+                timePassed += secondsPassed;
+
+                // rectX += (movingSpeed * secondsPassed);
+                // rectY += (movingSpeed * secondsPassed);
+
+                // easing motion
+                rectX = easeLinear(timePassed, 0, maxX, 4);
+                rectY = easeLinear(timePassed, 0, maxY, 4);
+
+                // reset position
+                if (rectX >= maxX || rectY >= maxY) {
+                    console.log("rectX: " + rectX + ", rectY: " + rectY);
+                    timePassed = 0;
+                    rectX = startX;
+                    rectY = startY;
+                }
+            }
+
+            // linear easing function
+            // https://spicyyoghurt.com/tools/easing-functions
+            function easeLinear (t, b, c, d) {
+                let res = c * (t / d) + b;
+                return res > c ? c : res;   // limit result to final position (c)
+            }
+
+            function draw() {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                let randomColor = Math.random() > 0.5 ? '#ff8080' : '#0099b0';
+                context.fillStyle = randomColor;
+                context.fillRect(rectX, rectY, 300, 200);
+
+                // calculate fps
+                fps = Math.round(1 / secondsPassed);
+
+                // draw fps
+                context.fillStyle = 'white';
+                context.fillRect(0, 0, 200, 100);
+                context.font = '25px Arial';
+                context.fillStyle = 'black';
+                context.fillText("FPS: " + fps, 10, 30);
+                context.fillText("X:" + Math.round(rectX) + " Y:" + Math.round(rectY), 10, 60);
+            }
+        </script>
+    </body>
+</html>
