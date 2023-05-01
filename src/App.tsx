@@ -1,7 +1,9 @@
+import { Canvas } from './components/canvas/Canvas';
+
 function App() {
   return (
     <div>
-      Hello World
+      <Canvas />
     </div>
   );
 }
