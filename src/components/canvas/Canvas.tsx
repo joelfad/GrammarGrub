@@ -63,7 +63,7 @@ export function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    let animationFrameId = 0;
+    let animationFrameId: number | null = null;
     const canvas: HTMLCanvasElement | null = canvasRef.current;
     if (canvas !== null) {
       const context: CanvasRenderingContext2D | null = canvas.getContext('2d');
@@ -77,10 +77,14 @@ export function Canvas() {
           draw(context, canvas, secondsPassed);
           animationFrameId = window.requestAnimationFrame(gameLoop);
         };
-        window.requestAnimationFrame(gameLoop);
+        gameLoop(0);
       }
     }
-    return window.cancelAnimationFrame(animationFrameId);
+    return () => {
+      if (animationFrameId !== null) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+    };
   }, []);
 
   return (
