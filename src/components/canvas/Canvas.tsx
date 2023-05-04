@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import classes from './Canvas.module.scss';
 
 /**
@@ -61,22 +61,35 @@ function draw(context: CanvasRenderingContext2D, canvas: HTMLCanvasElement, seco
 
 export function Canvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isRunning, setIsRunning] = useState<boolean>(true);
+  // const [context, setContext] = useState<CanvasRenderingContext2D | null>(null);
 
+  /**
+   * Set up canvas and main game loop.
+   */
   useEffect(() => {
+    console.log('Setting up canvas...');
     let animationFrameId: number | null = null;
     const canvas: HTMLCanvasElement | null = canvasRef.current;
     if (canvas !== null) {
       const context: CanvasRenderingContext2D | null = canvas.getContext('2d');
+      // const ctx: CanvasRenderingContext2D | null = canvas.getContext('2d');
+      // setContext(ctx);
       if (context !== null) {
         let prevTimeStamp = 0;
+
+        // main game loop
         const gameLoop = (timeStamp: DOMHighResTimeStamp) => {
           let secondsPassed = (timeStamp - prevTimeStamp) / 1000;
           secondsPassed = Math.min(secondsPassed, 0.1); // limit time skip
           prevTimeStamp = timeStamp;
-          update(secondsPassed);
-          draw(context, canvas, secondsPassed);
+          if (isRunning) {
+            update(secondsPassed);
+            draw(context, canvas, secondsPassed);
+          }
           animationFrameId = window.requestAnimationFrame(gameLoop);
         };
+
         gameLoop(0);
       }
     }
@@ -85,7 +98,25 @@ export function Canvas() {
         window.cancelAnimationFrame(animationFrameId);
       }
     };
-  }, []);
+  }, [isRunning]);
+
+  /**
+   * Set up key listener and process key presses.
+   */
+  useEffect(() => {
+    console.log('Setting up keyboard...');
+    const handleKeypress = (e: KeyboardEvent) => {
+      const keyCode = e.code;
+      console.log('keyCode: ', keyCode);
+      if (keyCode === 'Space') {
+        console.log('Setting isRunning to: ', !isRunning);
+        setIsRunning(!isRunning);
+      }
+    };
+
+    document.addEventListener('keypress', handleKeypress);
+    return () => document.removeEventListener('keypress', handleKeypress);
+  }, [isRunning]);
 
   return (
     <canvas ref={canvasRef} width="750" height="400" className={classes.canvas} />
